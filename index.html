@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GoTravel - סוכן הנסיעות האישי שלך</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --accent: #f59e0b;
+            --bg: #f1f5f9;
+        }
+        body { 
+            font-family: -apple-system, system-ui, sans-serif; 
+            background-color: var(--bg); 
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .logo { font-size: 2.8rem; font-weight: 800; color: var(--primary); margin: 30px 0 10px; }
+        .logo span { color: var(--accent); }
+
+        .card { 
+            background: white; padding: 25px; border-radius: 20px; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
+            width: 100%; max-width: 400px; text-align: center;
+        }
+        
+        label { display: block; text-align: right; font-weight: 600; margin: 15px 0 5px; color: #334155; }
+        
+        input, select { 
+            width: 100%; padding: 12px; border: 2px solid #e2e8f0; 
+            border-radius: 12px; font-size: 16px; box-sizing: border-box;
+            outline: none; transition: 0.3s;
+        }
+        input:focus, select:focus { border-color: var(--primary); }
+
+        .budget-options { display: flex; gap: 10px; margin-top: 5px; }
+        .budget-btn {
+            flex: 1; padding: 10px; border: 2px solid #e2e8f0;
+            border-radius: 10px; cursor: pointer; background: white;
+            font-weight: bold; transition: 0.3s;
+        }
+        .budget-btn.active { 
+            background: var(--primary); color: white; border-color: var(--primary); 
+        }
+
+        button.main-search { 
+            width: 100%; padding: 16px; background: var(--primary); 
+            color: white; border: none; border-radius: 12px; 
+            font-size: 1.1rem; font-weight: bold; margin-top: 25px;
+            cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+        
+        .results-area { margin-top: 20px; display: none; width: 100%; max-width: 400px; }
+        .result-link {
+            background: #fff; padding: 15px; margin-bottom: 10px;
+            border-radius: 12px; display: flex; justify-content: space-between;
+            align-items: center; text-decoration: none; color: #1e293b;
+            font-weight: 600; border-right: 5px solid var(--accent);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="logo">Go<span>Travel</span></div>
+
+    <div class="card">
+        <h2>תכנון חופשה חכם</h2>
+        
+        <label>לאן היעד?</label>
+        <input type="text" id="dest" placeholder="למשל: Amsterdam">
+        
+        <label>לכמה ימים?</label>
+        <input type="number" id="days" placeholder="מספר ימים">
+        
+        <label>רמת תקציב:</label>
+        <div class="budget-options">
+            <div class="budget-btn" onclick="setBudget('low', this)">זול</div>
+            <div class="budget-btn active" onclick="setBudget('mid', this)">בינוני</div>
+            <div class="budget-btn" onclick="setBudget('high', this)">יוקרתי</div>
+        </div>
+
+        <button class="main-search" onclick="generateLinks()">מצא לי אפשרויות ✨</button>
+    </div>
+
+    <div id="results" class="results-area">
+        <a id="link-flights" class="result-link" target="_blank">✈️ טיסות מומלצות <span>></span></a>
+        <a id="link-hotels" class="result-link" target="_blank">🏨 מלונות בתקציב שלך <span>></span></a>
+        <a id="link-trip" class="result-link" target="_blank">🗺️ מסלול טיול ל- <span id="res-days"></span> ימים <span>></span></a>
+    </div>
+
+<script>
+    let selectedBudget = 'mid';
+
+    function setBudget(level, el) {
+        selectedBudget = level;
+        document.querySelectorAll('.budget-btn').forEach(btn => btn.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    function generateLinks() {
+        const dest = document.getElementById('dest').value;
+        const days = document.getElementById('days').value || 3;
+
+        if (!dest) {
+            alert("אנא הזן יעד");
+            return;
+        }
+
+        // הגדרות חיפוש לפי תקציב
+        let hotelFilter = ""; // Booking
+        let flightFilter = ""; // Google Flights
+
+        if (selectedBudget === 'low') {
+            hotelFilter = "&nflt=price%3DILS-min-400%3Bclass%3D2%3Bclass%3D1%3Bclass%3D0"; // מלונות זולים/הוסטלים
+            flightFilter = "+cheap+flights";
+        } else if (selectedBudget === 'high') {
+            hotelFilter = "&nflt=class%3D5%3Bclass%3D4"; // מלונות 4-5 כוכבים
+            flightFilter = "+business+class+flights";
+        }
+
+        // עדכון הקישורים
+        document.getElementById('link-flights').href = `https://www.google.com/search?q=best+flights+from+Tel+Aviv+to+${dest}${flightFilter}`;
+        document.getElementById('link-hotels').href = `https://www.booking.com/searchresults.html?ss=${dest}${hotelFilter}`;
+        document.getElementById('link-trip').href = `https://www.google.com/search?q=${dest}+itinerary+for+${days}+days+${selectedBudget}+budget`;
+        
+        document.getElementById('res-days').innerText = days;
+        document.getElementById('results').style.display = 'block';
+        
+        // גלילה אוטומטית לתוצאות
+        window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+    }
+</script>
+
+</body>
+</html>
