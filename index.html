@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GoTravel - סוכן הנסיעות האישי שלך</title>
+    <title>GoTravel - תכנון חופשה מותאם אישית</title>
     <style>
         :root {
             --primary: #2563eb;
             --accent: #f59e0b;
-            --bg: #f1f5f9;
+            --bg: #f8fafc;
+            --text: #1e293b;
         }
         body { 
             font-family: -apple-system, system-ui, sans-serif; 
@@ -16,31 +17,33 @@
             margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
         }
-        .logo { font-size: 2.8rem; font-weight: 800; color: var(--primary); margin: 30px 0 10px; }
+        .logo { font-size: 2.5rem; font-weight: 800; color: var(--primary); margin: 20px 0; }
         .logo span { color: var(--accent); }
 
         .card { 
-            background: white; padding: 25px; border-radius: 20px; 
+            background: white; padding: 25px; border-radius: 24px; 
             box-shadow: 0 10px 25px rgba(0,0,0,0.05); 
-            width: 100%; max-width: 400px; text-align: center;
+            width: 100%; max-width: 450px; text-align: center;
+            box-sizing: border-box;
         }
         
-        label { display: block; text-align: right; font-weight: 600; margin: 15px 0 5px; color: #334155; }
+        label { display: block; text-align: right; font-weight: 600; margin: 15px 0 5px; color: var(--text); }
         
         input, select { 
-            width: 100%; padding: 12px; border: 2px solid #e2e8f0; 
+            width: 100%; padding: 14px; border: 2px solid #e2e8f0; 
             border-radius: 12px; font-size: 16px; box-sizing: border-box;
-            outline: none; transition: 0.3s;
+            outline: none; transition: 0.3s; background: #fff;
         }
         input:focus, select:focus { border-color: var(--primary); }
 
-        .budget-options { display: flex; gap: 10px; margin-top: 5px; }
-        .budget-btn {
-            flex: 1; padding: 10px; border: 2px solid #e2e8f0;
+        .options-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 5px; }
+        .opt-btn {
+            padding: 10px 5px; border: 2px solid #e2e8f0;
             border-radius: 10px; cursor: pointer; background: white;
-            font-weight: bold; transition: 0.3s;
+            font-size: 0.9rem; font-weight: bold; transition: 0.3s;
+            -webkit-tap-highlight-color: transparent;
         }
-        .budget-btn.active { 
+        .opt-btn.active { 
             background: var(--primary); color: white; border-color: var(--primary); 
         }
 
@@ -51,14 +54,17 @@
             cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
         
-        .results-area { margin-top: 20px; display: none; width: 100%; max-width: 400px; }
+        .results-area { margin-top: 25px; display: none; width: 100%; max-width: 450px; }
         .result-link {
-            background: #fff; padding: 15px; margin-bottom: 10px;
-            border-radius: 12px; display: flex; justify-content: space-between;
-            align-items: center; text-decoration: none; color: #1e293b;
-            font-weight: 600; border-right: 5px solid var(--accent);
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            background: #fff; padding: 18px; margin-bottom: 12px;
+            border-radius: 15px; display: flex; justify-content: space-between;
+            align-items: center; text-decoration: none; color: var(--text);
+            font-weight: 700; border-right: 6px solid var(--accent);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
+            transition: 0.2s;
         }
+        .result-link:active { transform: scale(0.98); }
+        .result-link span { color: var(--primary); font-size: 1.2rem; }
     </style>
 </head>
 <body>
@@ -66,36 +72,45 @@
     <div class="logo">Go<span>Travel</span></div>
 
     <div class="card">
-        <h2>תכנון חופשה חכם</h2>
-        
-        <label>לאן היעד?</label>
-        <input type="text" id="dest" placeholder="למשל: Amsterdam">
+        <label>לאן תרצו לטוס?</label>
+        <input type="text" id="dest" placeholder="למשל: Paris, Thailand...">
         
         <label>לכמה ימים?</label>
-        <input type="number" id="days" placeholder="מספר ימים">
+        <input type="number" id="days" placeholder="כמות ימים">
         
-        <label>רמת תקציב:</label>
-        <div class="budget-options">
-            <div class="budget-btn" onclick="setBudget('low', this)">זול</div>
-            <div class="budget-btn active" onclick="setBudget('mid', this)">בינוני</div>
-            <div class="budget-btn" onclick="setBudget('high', this)">יוקרתי</div>
+        <label>תקציב:</label>
+        <div class="options-grid">
+            <div class="opt-btn" onclick="setVal('budget', 'low', this)">זול</div>
+            <div class="opt-btn active" onclick="setVal('budget', 'mid', this)">בינוני</div>
+            <div class="opt-btn" onclick="setVal('budget', 'high', this)">יוקרתי</div>
         </div>
 
-        <button class="main-search" onclick="generateLinks()">מצא לי אפשרויות ✨</button>
+        <label>סוג הטיול:</label>
+        <div class="options-grid">
+            <div class="opt-btn active" onclick="setVal('type', 'romantic', this)">זוגי</div>
+            <div class="opt-btn" onclick="setVal('type', 'family', this)">משפחתי</div>
+            <div class="opt-btn" onclick="setVal('type', 'party', this)">מסיבות</div>
+            <div class="opt-btn" onclick="setVal('type', 'relax', this)">בטן-גב</div>
+            <div class="opt-btn" onclick="setVal('type', 'urban', this)">עירוני</div>
+            <div class="opt-btn" onclick="setVal('type', 'nature', this)">טבע</div>
+        </div>
+
+        <button class="main-search" onclick="generateLinks()">מצא לי חופשה מושלמת ✨</button>
     </div>
 
     <div id="results" class="results-area">
-        <a id="link-flights" class="result-link" target="_blank">✈️ טיסות מומלצות <span>></span></a>
-        <a id="link-hotels" class="result-link" target="_blank">🏨 מלונות בתקציב שלך <span>></span></a>
-        <a id="link-trip" class="result-link" target="_blank">🗺️ מסלול טיול ל- <span id="res-days"></span> ימים <span>></span></a>
+        <a id="link-flights" class="result-link" target="_blank">✈️ הטיסות המשתלמות ביותר <span>←</span></a>
+        <a id="link-hotels" class="result-link" target="_blank">🏨 מלונות מותאמים עבורכם <span>←</span></a>
+        <a id="link-trip" class="result-link" target="_blank">🗺️ מסלול <span id="res-type"></span> ל-<span id="res-days"></span> ימים <span>←</span></a>
     </div>
 
 <script>
-    let selectedBudget = 'mid';
+    let config = { budget: 'mid', type: 'romantic' };
 
-    function setBudget(level, el) {
-        selectedBudget = level;
-        document.querySelectorAll('.budget-btn').forEach(btn => btn.classList.remove('active'));
+    function setVal(category, value, el) {
+        config[category] = value;
+        const parent = el.parentElement;
+        parent.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('active'));
         el.classList.add('active');
     }
 
@@ -104,31 +119,37 @@
         const days = document.getElementById('days').value || 3;
 
         if (!dest) {
-            alert("אנא הזן יעד");
+            alert("אנא הזינו יעד (מומלץ באנגלית)");
             return;
         }
 
-        // הגדרות חיפוש לפי תקציב
-        let hotelFilter = ""; // Booking
-        let flightFilter = ""; // Google Flights
+        // לוגיקת תקציב
+        let hotelFilter = "";
+        let flightAdd = "";
+        if (config.budget === 'low') { hotelFilter = "&nflt=price%3DILS-min-350%3Bclass%3D2%3Bclass%3D1%3Bclass%3D0"; flightAdd = "+cheap"; }
+        if (config.budget === 'high') { hotelFilter = "&nflt=class%3D5%3Bclass%3D4"; flightAdd = "+luxury"; }
 
-        if (selectedBudget === 'low') {
-            hotelFilter = "&nflt=price%3DILS-min-400%3Bclass%3D2%3Bclass%3D1%3Bclass%3D0"; // מלונות זולים/הוסטלים
-            flightFilter = "+cheap+flights";
-        } else if (selectedBudget === 'high') {
-            hotelFilter = "&nflt=class%3D5%3Bclass%3D4"; // מלונות 4-5 כוכבים
-            flightFilter = "+business+class+flights";
-        }
+        // לוגיקת סוג טיול (תרגום להצגה ולחיפוש)
+        const typeMap = {
+            romantic: { text: 'זוגי רומנטי', query: 'romantic+couple' },
+            family: { text: 'משפחתי מהנה', query: 'family+friendly+with+kids' },
+            party: { text: 'חגיגי (מסיבות)', query: 'nightlife+clubs+bars' },
+            relax: { text: 'רגוע (בטן-גב)', query: 'beach+relaxing+resorts' },
+            urban: { text: 'עירוני תוסס', query: 'sightseeing+city+walk' },
+            nature: { text: 'בטבע', query: 'hiking+nature+outdoors' }
+        };
 
-        // עדכון הקישורים
-        document.getElementById('link-flights').href = `https://www.google.com/search?q=best+flights+from+Tel+Aviv+to+${dest}${flightFilter}`;
+        const typeInfo = typeMap[config.type];
+
+        // בניית קישורים
+        document.getElementById('link-flights').href = `https://www.google.com/search?q=best${flightAdd}+flights+from+Tel+Aviv+to+${dest}`;
         document.getElementById('link-hotels').href = `https://www.booking.com/searchresults.html?ss=${dest}${hotelFilter}`;
-        document.getElementById('link-trip').href = `https://www.google.com/search?q=${dest}+itinerary+for+${days}+days+${selectedBudget}+budget`;
+        document.getElementById('link-trip').href = `https://www.google.com/search?q=${dest}+${typeInfo.query}+itinerary+for+${days}+days+${config.budget}+budget`;
         
+        document.getElementById('res-type').innerText = typeInfo.text;
         document.getElementById('res-days').innerText = days;
         document.getElementById('results').style.display = 'block';
         
-        // גלילה אוטומטית לתוצאות
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 </script>
