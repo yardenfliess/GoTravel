@@ -3,197 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>GoTravel - תכנון חופשה מותאם אישית</title>
+    <title>GoTravel - חופשה בלחיצה</title>
     <style>
         :root {
             --primary: #2563eb;
             --accent: #f59e0b;
-            --bg: #f8fafc;
             --text: #1e293b;
         }
+        
         body { 
             font-family: -apple-system, system-ui, sans-serif; 
-            background-color: var(--bg); 
             margin: 0; padding: 20px;
             display: flex; flex-direction: column; align-items: center;
             min-height: 100vh;
-            /* רקע דינמי */
+            /* הגדרות רקע בסיסיות */
+            background-color: #333; /* צבע גיבוי אם התמונה לא נטענת */
             background-size: cover;
-            background-position: center center;
-            background-repeat: no-repeat;
-            transition: background-image 1s ease-in-out; /* אנימציית החלפה */
-            color: var(--text); /* צבע טקסט ברירת מחדל לניגודיות */
-        }
-        /* שכבת הצללה לשיפור קריאות טקסט על רקע תמונה */
-        body::before {
-            content: '';
-            position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.4); /* צל כהה */
-            z-index: -1; /* שיהיה מתחת לתוכן */
+            background-position: center;
+            background-attachment: fixed;
+            transition: background-image 0.8s ease-in-out;
+            position: relative;
         }
 
-        .logo { font-size: 2.5rem; font-weight: 800; color: white; margin: 20px 0; text-shadow: 0 2px 5px rgba(0,0,0,0.5); }
+        /* שכבת הצללה עדינה כדי לראות את הטקסט */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.35); /* כהות של 35% */
+            z-index: 0;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 1; /* מוודא שהתוכן מעל הרקע */
+            width: 100%;
+            max-width: 450px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .logo { 
+            font-size: 3rem; font-weight: 900; color: white; 
+            margin: 20px 0; text-shadow: 2px 2px 10px rgba(0,0,0,0.5); 
+        }
         .logo span { color: var(--accent); }
 
         .card { 
-            background: rgba(255, 255, 255, 0.9); /* רקע לבן שקוף */
-            padding: 25px; border-radius: 24px; 
-            box-shadow: 0 10px 25px rgba(0,0,0,0.15); 
-            width: 100%; max-width: 450px; text-align: center;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px 20px; border-radius: 28px; 
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2); 
+            width: 100%; text-align: center;
             box-sizing: border-box;
         }
         
-        h2 { color: var(--text); }
-        p { color: #475569; }
-        label { display: block; text-align: right; font-weight: 600; margin: 15px 0 5px; color: var(--text); }
+        h2 { margin-top: 0; color: var(--text); font-size: 1.5rem; }
+        label { display: block; text-align: right; font-weight: 700; margin: 15px 0 5px; color: var(--text); font-size: 0.9rem; }
         
-        input, select { 
+        input { 
             width: 100%; padding: 14px; border: 2px solid #e2e8f0; 
-            border-radius: 12px; font-size: 16px; box-sizing: border-box;
-            outline: none; transition: 0.3s; background: #fff;
+            border-radius: 14px; font-size: 16px; box-sizing: border-box;
+            outline: none; transition: 0.3s;
         }
-        input:focus, select:focus { border-color: var(--primary); }
+        input:focus { border-color: var(--primary); box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.1); }
 
-        .options-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(80px, 1fr)); gap: 8px; margin-top: 5px; }
+        .options-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 5px; }
         .opt-btn {
-            padding: 10px 5px; border: 2px solid #e2e8f0;
-            border-radius: 10px; cursor: pointer; background: white;
-            font-size: 0.9rem; font-weight: bold; transition: 0.3s;
-            -webkit-tap-highlight-color: transparent;
+            padding: 12px 5px; border: 2px solid #e2e8f0;
+            border-radius: 12px; cursor: pointer; background: white;
+            font-size: 0.85rem; font-weight: bold; transition: 0.3s;
             color: var(--text);
         }
-        .opt-btn.active { 
-            background: var(--primary); color: white; border-color: var(--primary); 
-        }
+        .opt-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
         button.main-search { 
-            width: 100%; padding: 16px; background: var(--primary); 
-            color: white; border: none; border-radius: 12px; 
-            font-size: 1.1rem; font-weight: bold; margin-top: 25px;
-            cursor: pointer; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
-            -webkit-tap-highlight-color: transparent;
+            width: 100%; padding: 18px; background: var(--primary); 
+            color: white; border: none; border-radius: 14px; 
+            font-size: 1.2rem; font-weight: bold; margin-top: 25px;
+            cursor: pointer; transition: 0.3s;
         }
-        
-        .results-area { margin-top: 25px; display: none; width: 100%; max-width: 450px; }
+        button.main-search:active { transform: scale(0.96); }
+
+        .results-area { margin-top: 25px; display: none; width: 100%; }
         .result-link {
-            background: rgba(255, 255, 255, 0.95); padding: 18px; margin-bottom: 12px;
-            border-radius: 15px; display: flex; justify-content: space-between;
+            background: white; padding: 20px; margin-bottom: 12px;
+            border-radius: 18px; display: flex; justify-content: space-between;
             align-items: center; text-decoration: none; color: var(--text);
-            font-weight: 700; border-right: 6px solid var(--accent);
-            box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-            transition: 0.2s;
+            font-weight: 800; border-right: 8px solid var(--accent);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .result-link:active { transform: scale(0.98); }
-        .result-link span { color: var(--primary); font-size: 1.2rem; }
     </style>
 </head>
-<body id="dynamic-bg">
+<body id="bg-body">
 
-    <div class="logo">Go<span>Travel</span></div>
+    <div class="content-wrapper">
+        <div class="logo">Go<span>Travel</span></div>
 
-    <div class="card">
-        <h2>תכנון חופשה חכם</h2>
-        
-        <label>לאן תרצו לטוס?</label>
-        <input type="text" id="dest" placeholder="למשל: New York">
-        
-        <label>לכמה ימים?</label>
-        <input type="number" id="days" placeholder="כמות ימים">
-        
-        <label>תקציב:</label>
-        <div class="options-grid">
-            <div class="opt-btn" onclick="setVal('budget', 'low', this)">זול</div>
-            <div class="opt-btn active" onclick="setVal('budget', 'mid', this)">בינוני</div>
-            <div class="opt-btn" onclick="setVal('budget', 'high', this)">יוקרתי</div>
+        <div class="card">
+            <h2>לאן יוצאים הפעם?</h2>
+            
+            <label>יעד (באנגלית)</label>
+            <input type="text" id="dest" placeholder="למשל: Tokyo, London...">
+            
+            <label>לכמה ימים?</label>
+            <input type="number" id="days" placeholder="מספר ימים">
+            
+            <label>תקציב</label>
+            <div class="options-grid">
+                <div class="opt-btn" onclick="setVal('budget', 'low', this)">זול</div>
+                <div class="opt-btn active" onclick="setVal('budget', 'mid', this)">בינוני</div>
+                <div class="opt-btn" onclick="setVal('budget', 'high', this)">יוקרתי</div>
+            </div>
+
+            <label>סוג הטיול</label>
+            <div class="options-grid">
+                <div class="opt-btn active" onclick="setVal('type', 'romantic', this)">זוגי</div>
+                <div class="opt-btn" onclick="setVal('type', 'family', this)">משפחתי</div>
+                <div class="opt-btn" onclick="setVal('type', 'party', this)">מסיבות</div>
+                <div class="opt-btn" onclick="setVal('type', 'relax', this)">בטן-גב</div>
+                <div class="opt-btn" onclick="setVal('type', 'urban', this)">עירוני</div>
+                <div class="opt-btn" onclick="setVal('type', 'nature', this)">טבע</div>
+            </div>
+
+            <button class="main-search" onclick="generateLinks()">חפש לי חופשה ✨</button>
         </div>
 
-        <label>סוג הטיול:</label>
-        <div class="options-grid">
-            <div class="opt-btn active" onclick="setVal('type', 'romantic', this)">זוגי</div>
-            <div class="opt-btn" onclick="setVal('type', 'family', this)">משפחתי</div>
-            <div class="opt-btn" onclick="setVal('type', 'party', this)">מסיבות</div>
-            <div class="opt-btn" onclick="setVal('type', 'relax', this)">בטן-גב</div>
-            <div class="opt-btn" onclick="setVal('type', 'urban', this)">עירוני</div>
-            <div class="opt-btn" onclick="setVal('type', 'nature', this)">טבע</div>
+        <div id="results" class="results-area">
+            <a id="link-flights" class="result-link" target="_blank">✈️ טיסות הכי זולות <span>←</span></a>
+            <a id="link-hotels" class="result-link" target="_blank">🏨 מלונות מומלצים <span>←</span></a>
+            <a id="link-trip" class="result-link" target="_blank">🗺️ מסלול טיול מלא <span>←</span></a>
         </div>
-
-        <button class="main-search" onclick="generateLinks()">מצא לי חופשה מושלמת ✨</button>
-    </div>
-
-    <div id="results" class="results-area">
-        <a id="link-flights" class="result-link" target="_blank">✈️ הטיסות המשתלמות ביותר <span>←</span></a>
-        <a id="link-hotels" class="result-link" target="_blank">🏨 מלונות מותאמים עבורכם <span>←</span></a>
-        <a id="link-trip" class="result-link" target="_blank">🗺️ מסלול <span id="res-type"></span> ל-<span id="res-days"></span> ימים <span>←</span></a>
     </div>
 
 <script>
     let config = { budget: 'mid', type: 'romantic' };
 
-    // רשימת תמונות רקע (תמונות מומלצות ב-Unsplash)
-    const backgroundImages = [
-        'https://images.unsplash.com/photo-1542051841-38fdc1cdfd4f?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // מגדל אייפל
-        'https://images.unsplash.com/photo-1507525428034-b723cf961c3e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // חוף טרופי
-        'https://images.unsplash.com/photo-1555400038-6b9995079a11?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // מטוס בשמיים
-        'https://images.unsplash.com/photo-1526772662002-3f82bdea70cc?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // קולוסאום רומא
-        'https://images.unsplash.com/photo-1476510702511-d007b8b422a5?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // שדה תעופה
-        'https://images.unsplash.com/photo-1503220317865-c62ec953a328?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // מפה ודרכון
-        'https://images.unsplash.com/photo-1518684079-c5364188b89e?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // ונציה
-        'https://images.unsplash.com/photo-1496950866446-cefe33980fde?q=80&w=2940&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' // לונדון
+    // רשימת תמונות מ-Source.Unsplash (יציב יותר)
+    const images = [
+        "https://images.unsplash.com/photo-1436491865332-7a61a109cc05?auto=format&fit=crop&w=1200&q=80", // מטוס
+        "https://images.unsplash.com/photo-1493246507139-91e8bef99c02?auto=format&fit=crop&w=1200&q=80", // הרים
+        "https://images.unsplash.com/photo-1506929197327-fb87b50f764a?auto=format&fit=crop&w=1200&q=80", // חוף
+        "https://images.unsplash.com/photo-1519671482749-fd09be7ccebf?auto=format&fit=crop&w=1200&q=80", // עיר בלילה
+        "https://images.unsplash.com/photo-1467269204594-9661b134dd2b?auto=format&fit=crop&w=1200&q=80"  // עיירה אירופאית
     ];
 
-    function setRandomBackground() {
-        const randomIndex = Math.floor(Math.random() * backgroundImages.length);
-        const imageUrl = backgroundImages[randomIndex];
-        document.getElementById('dynamic-bg').style.backgroundImage = `url('${imageUrl}')`;
+    function pickRandomBg() {
+        const url = images[Math.floor(Math.random() * images.length)];
+        document.body.style.backgroundImage = `url('${url}')`;
     }
 
-    // הפעלת פונקציית רקע אקראי בעת טעינת הדף
-    window.onload = setRandomBackground;
+    window.onload = pickRandomBg;
 
     function setVal(category, value, el) {
         config[category] = value;
-        const parent = el.parentElement;
-        parent.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('active'));
+        el.parentElement.querySelectorAll('.opt-btn').forEach(btn => btn.classList.remove('active'));
         el.classList.add('active');
     }
 
     function generateLinks() {
         const dest = document.getElementById('dest').value;
         const days = document.getElementById('days').value || 3;
+        if (!dest) { alert("נא להזין יעד"); return; }
 
-        if (!dest) {
-            alert("אנא הזינו יעד (מומלץ באנגלית)");
-            return;
-        }
-
-        // לוגיקת תקציב
         let hotelFilter = "";
-        let flightAdd = "";
-        if (config.budget === 'low') { hotelFilter = "&nflt=price%3DILS-min-350%3Bclass%3D2%3Bclass%3D1%3Bclass%3D0"; flightAdd = "+cheap"; }
-        if (config.budget === 'high') { hotelFilter = "&nflt=class%3D5%3Bclass%3D4"; flightAdd = "+luxury"; }
+        if (config.budget === 'low') hotelFilter = "&nflt=price%3DILS-min-400%3Bclass%3D2";
+        if (config.budget === 'high') hotelFilter = "&nflt=class%3D5%3Bclass%3D4";
 
-        // לוגיקת סוג טיול (תרגום להצגה ולחיפוש)
-        const typeMap = {
-            romantic: { text: 'זוגי רומנטי', query: 'romantic+couple' },
-            family: { text: 'משפחתי מהנה', query: 'family+friendly+with+kids' },
-            party: { text: 'חגיגי (מסיבות)', query: 'nightlife+clubs+bars' },
-            relax: { text: 'רגוע (בטן-גב)', query: 'beach+relaxing+resorts' },
-            urban: { text: 'עירוני תוסס', query: 'sightseeing+city+walk' },
-            nature: { text: 'בטבע', query: 'hiking+nature+outdoors' }
+        const typeQueries = {
+            romantic: 'romantic+couple+spots',
+            family: 'family+attractions+kids',
+            party: 'best+nightlife+clubs',
+            relax: 'best+beaches+resorts',
+            urban: 'city+walk+sightseeing',
+            nature: 'nature+trails+hiking'
         };
 
-        const typeInfo = typeMap[config.type];
-
-        // בניית קישורים
-        document.getElementById('link-flights').href = `https://www.google.com/search?q=best${flightAdd}+flights+from+Tel+Aviv+to+${dest}`;
+        document.getElementById('link-flights').href = `https://www.google.com/search?q=cheap+flights+to+${dest}`;
         document.getElementById('link-hotels').href = `https://www.booking.com/searchresults.html?ss=${dest}${hotelFilter}`;
-        document.getElementById('link-trip').href = `https://www.google.com/search?q=${dest}+${typeInfo.query}+itinerary+for+${days}+days+${config.budget}+budget`;
+        document.getElementById('link-trip').href = `https://www.google.com/search?q=${dest}+${typeQueries[config.type]}+itinerary+${days}+days`;
         
-        document.getElementById('res-type').innerText = typeInfo.text;
-        document.getElementById('res-days').innerText = days;
         document.getElementById('results').style.display = 'block';
-        
         window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
     }
 </script>
